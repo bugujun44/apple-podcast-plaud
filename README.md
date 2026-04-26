@@ -54,23 +54,55 @@ pip install -e ".[dev]"
 
 ## Quickstart
 
-### 1. One-time auth
+### 1. One-time auth — pick one of two paths
 
-You need a Plaud bearer token. We don't bundle email-password login —
-the safest method is to copy the token from `web.plaud.ai`'s Local Storage:
+You need a Plaud bearer token. There are two ways to get one — pick whichever
+works for your account.
+
+#### Path A — email + password login (only works if your account has a password)
+
+```bash
+apb auth login                   # interactive: prompts for email + password
+# or
+apb auth login --email you@example.com
+```
+
+Some accounts (Google sign-in only, no password ever set) **cannot** use
+this path; the server will reject every credential pair until you set a
+password via the "Forgot password" flow at <https://web.plaud.ai>. If you
+hit `wrong account or password` even with the right credentials, switch
+to Path B.
+
+#### Path B — paste a token from the web app
+
+Works for every account, including Google-only.
 
 1. Log in to <https://web.plaud.ai>
-2. Open DevTools → Console
+2. Open DevTools → **Console** (NOT the Local Storage view — that pane
+   line-wraps long values and copies will silently include newlines)
 3. Run:
    ```js
    copy(localStorage.getItem('tokenstr'))
    ```
-4. Save the token to `~/.config/plaud/token`:
+4. Save the token:
+   ```bash
+   apb auth set-token             # interactive: paste then Ctrl-D
+   ```
+   …or do it by hand:
    ```bash
    mkdir -p ~/.config/plaud && pbpaste > ~/.config/plaud/token && chmod 600 ~/.config/plaud/token
    ```
 
-Token lasts ~10 months; rotate via the same flow when it expires.
+#### Verify
+
+```bash
+apb auth status
+# region: apac
+# expires: 2027-02-19 (in 299 days)
+# server check: ok
+```
+
+Tokens last ~10 months; rotate via the same flow when expired.
 Detail: [docs/token-extraction.md](docs/token-extraction.md).
 
 ### 2. Run

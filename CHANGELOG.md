@@ -19,3 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - Typed exceptions: `PlaudError`, `AuthenticationError`, `NotFoundError`,
     `APIError`, `UploadError`, `AnalysisTimeoutError`.
 - Tests for `auth` and `session` (no real network).
+- `auth.login_with_password()` for accounts that have a password set; the
+  server message ``wrong account or password`` is mapped to
+  ``AuthenticationError`` even when returned with HTTP 200.
+- `auth.save_token()` writes ``~/.config/plaud/token`` with mode 0600.
+- `auth.token_info()` decodes the JWT locally and returns
+  ``region`` / ``issued_at`` / ``expires_at`` / ``expires_in_days`` /
+  ``user_id``. No network call.
+- `auth.verify_token()` does a cheap ``/file/simple/web`` GET to confirm
+  the server still accepts the token (returns ``True`` / ``False`` for
+  401, raises for other transport errors).
