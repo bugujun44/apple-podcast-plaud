@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "apple-podcast-plaud"
@@ -52,8 +52,9 @@ Issues = "https://github.com/jumpin-dev/apple-podcast-plaud/issues"
 apb = "apple_podcast_plaud.bridge.cli:main"
 apple-podcast-plaud = "apple_podcast_plaud.bridge.cli:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/apple_podcast_plaud"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["apple_podcast_plaud*"]
 
 [tool.ruff]
 line-length = 100
