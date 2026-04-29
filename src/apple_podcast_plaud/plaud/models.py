@@ -30,12 +30,22 @@ class Recording(_Lenient):
         default="",
         validation_alias=AliasChoices("file_name", "filename"),
     )
-    duration: float = 0.0  # seconds
+    duration: float = 0.0  # raw Plaud value — milliseconds on /file/list responses
     start_time: int = 0  # unix epoch ms
     is_trash: bool = False
     is_trans: bool = False  # transcription has been generated
     is_summary: bool = False  # AI summary has been generated
     scene: int | None = None
+
+    @property
+    def duration_seconds(self) -> int:
+        """Convenience: ``duration`` divided by 1000 and floored.
+
+        Plaud reports ``duration`` in milliseconds for most endpoints
+        (a 1-hour podcast comes back as ``3_600_000``). Use this when you
+        need a sane "minutes:seconds" number to show humans.
+        """
+        return int(self.duration / 1000) if self.duration else 0
 
 
 class TranscriptionSegment(_Lenient):

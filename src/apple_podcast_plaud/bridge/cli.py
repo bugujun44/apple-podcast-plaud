@@ -261,7 +261,7 @@ def fetch(
     progress(f"→ PlaudClient region={client.region}")
 
     rec = client.recordings.get(recording_id)
-    progress(f"→ Recording: {rec.filename} (duration ≈ {int(rec.duration or 0)}s)")
+    progress(f"→ Recording: {rec.filename} (duration ≈ {rec.duration_seconds}s)")
 
     # Default podcast/episode split: Plaud's upload_name template was
     # ``"<podcast> — <episode>"``. Try to recover both halves.
@@ -286,7 +286,7 @@ def fetch(
         progress(f"→ Summary not available yet: {e}")
         summary = None
 
-    duration_sec = int(rec.duration or 0)
+    duration_sec = rec.duration_seconds
     if not duration_sec and segments:
         duration_sec = segments[-1].end_time // 1000
 

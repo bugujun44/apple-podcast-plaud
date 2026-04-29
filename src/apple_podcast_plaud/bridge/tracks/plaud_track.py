@@ -69,7 +69,7 @@ def transcribe_via_plaud(
     except NotFoundError:
         summary = None
 
-    duration_sec = int(rec.duration) if rec.duration else 0
+    duration_sec = rec.duration_seconds
     if not duration_sec and segments:
         duration_sec = segments[-1].end_time // 1000
 
