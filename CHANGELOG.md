@@ -29,3 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `auth.verify_token()` does a cheap ``/file/simple/web`` GET to confirm
   the server still accepts the token (returns ``True`` / ``False`` for
   401, raises for other transport errors).
+- `bridge.apple_podcasts` (read-only Apple Podcasts SQLite query),
+  `bridge.language` (CJK script detection), `bridge.output`
+  (transcript.md + summary.md + metadata.json + JSON envelope writer),
+  `bridge.tracks.plaud_track` (upload → wait → fetch orchestrator),
+  `bridge.cli` (``apb`` click app: ``auth login`` / ``set-token`` /
+  ``status`` / ``logout``, ``list-podcasts``, ``transcribe``).
+- ``scripts/dev-install.sh``: idempotent dev environment bootstrap that
+  works around a Python 3.14 ``.pth`` honouring bug on some Macs by
+  writing both a plain ``.pth`` and a ``PYTHONPATH`` export.
+
+### Changed
+- Build backend: hatchling → setuptools. Hatchling's editable install
+  generated an entry-point script that couldn't import the package on
+  some Python 3.14 builds.

@@ -46,11 +46,23 @@ package can skip Plaud entirely and use the free Apple TTML cache instead
 
 ```bash
 pip install apple-podcast-plaud  # once published
-# or, for local dev:
+```
+
+For local dev (recommended — works around a Python 3.14 ``.pth`` bug we hit
+in setuptools' editable install on some Macs):
+
+```bash
 git clone https://github.com/jumpin-dev/apple-podcast-plaud
 cd apple-podcast-plaud
-pip install -e ".[dev]"
+./scripts/dev-install.sh
+source .venv/bin/activate
+apb --version
 ```
+
+That script creates a venv, installs the package + dev extras, and writes
+both a plain-text ``.pth`` AND a ``PYTHONPATH`` export to
+``.venv/bin/activate`` so ``import apple_podcast_plaud`` always works
+regardless of whether your Python build honours ``.pth`` files at startup.
 
 ## Quickstart
 
