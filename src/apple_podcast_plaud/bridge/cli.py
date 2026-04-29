@@ -211,6 +211,113 @@ def list_podcasts(limit: int, as_json: bool) -> None:
 # ---------------------------------------------------------------------------
 
 
+@main.command("fetch")
+@click.argument("recording_id")
+@click.option(
+    "--podcast",
+    default=None,
+    help="Override podcast title in the output frontmatter. "
+    "Defaults to the Plaud filename's part before the em-dash.",
+)
+@click.option(
+    "--episode",
+    default=None,
+    help="Override episode title. Defaults to the part after the em-dash.",
+)
+@click.option(
+    "--out-dir",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=None,
+    help=f"Output directory. Default: {DEFAULT_ROOT}/<date>-<slug>/",
+)
+@click.option(
+    "--json-out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="Write the JSON envelope to this path. Use '-' for stdout (default).",
+)
+@click.option("--quiet", is_flag=True)
+def fetch(
+    recording_id: str,
+    podcast: str | None,
+    episode: str | None,
+    out_dir: Path | None,
+    json_out: Path | None,
+    quiet: bool,
+) -> None:
+    """Fetch transcript + summary for an EXISTING Plaud recording (no upload).
+
+    Use this when ``apb transcribe`` failed mid-flow but the recording was
+    already created on Plaud, or when you uploaded via the Plaud web app
+    yourself and just want the artifacts on disk.
+    """
+    import time
+
+    def progress(msg: str) -> None:
+        if not quiet:
+            click.echo(msg, err=True)
+
+    client = PlaudClient()
+    progress(f"→ PlaudClient region={client.region}")
+
+    rec = client.recordings.get(recording_id)
+    progress(f"→ Recording: {rec.filename} (duration ≈ {int(rec.duration or 0)}s)")
+
+    # Default podcast/episode split: Plaud's upload_name template was
+    # ``"<podcast> — <episode>"``. Try to recover both halves.
+    if podcast is None or episode is None:
+        if " — " in rec.filename:
+            head, tail = rec.filename.split(" — ", 1)
+            podcast = podcast or head
+            episode = episode or tail
+        else:
+            podcast = podcast or "Plaud Recording"
+            episode = episode or rec.filename or recording_id
+
+    started = time.monotonic()
+    progress("→ Fetching segments...")
+    segments = client.transcriptions.get_segments(recording_id)
+    progress(f"  {len(segments)} segments")
+
+    try:
+        summary: object | None = client.transcriptions.get_summary(recording_id)
+        progress("→ Got AI summary")
+    except Exception as e:  # NotFoundError or APIError
+        progress(f"→ Summary not available yet: {e}")
+        summary = None
+
+    duration_sec = int(rec.duration or 0)
+    if not duration_sec and segments:
+        duration_sec = segments[-1].end_time // 1000
+
+    from apple_podcast_plaud.bridge.output import TranscribeResult
+
+    result = TranscribeResult(
+        podcast=podcast,
+        episode=episode,
+        language=lang.detect(podcast or "", episode or ""),
+        segments=segments,
+        summary=summary,  # type: ignore[arg-type]
+        source="plaud",
+        plaud_recording_id=recording_id,
+        duration_sec=duration_sec,
+    )
+
+    envelope = write_artifacts(
+        result,
+        out_dir=out_dir,
+        elapsed_sec=int(time.monotonic() - started),
+    )
+
+    payload = json.dumps(envelope, ensure_ascii=False, indent=2)
+    if json_out is None or str(json_out) == "-":
+        click.echo(payload)
+    else:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(payload, encoding="utf-8")
+        progress(f"→ Wrote JSON envelope: {json_out}")
+
+
 @main.command("transcribe")
 @click.argument("keyword")
 @click.option(

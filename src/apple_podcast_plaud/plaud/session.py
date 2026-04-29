@@ -124,8 +124,14 @@ class PlaudSession:
         headers: dict[str, str] | None = None,
         timeout: int = 600,
     ) -> requests.Response:
-        """PUT without JSON wrapping — used for S3 multipart uploads."""
-        return self._sess.put(url, data=data, headers=headers, timeout=timeout)
+        """PUT to a presigned URL — used for S3 multipart uploads.
+
+        Bypasses our session entirely. The presigned URL already carries
+        a signature in its query string; sending our session's
+        ``Authorization: bearer …`` header alongside causes S3 to refuse
+        with HTTP 400 "Only one auth mechanism allowed".
+        """
+        return requests.put(url, data=data, headers=headers, timeout=timeout)
 
     def get_raw_bytes(self, url: str, *, timeout: int = 60) -> bytes:
         """Fetch arbitrary URL (e.g. an S3 presigned link) and gunzip if needed.

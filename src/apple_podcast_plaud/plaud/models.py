@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class _Lenient(BaseModel):
@@ -17,10 +17,19 @@ class _Lenient(BaseModel):
 
 
 class Recording(_Lenient):
-    """A single Plaud recording (file). Returned by list / get / upload."""
+    """A single Plaud recording (file). Returned by list / get / upload.
 
-    file_id: str = Field(alias="file_id")
-    filename: str = Field(default="", alias="file_name")
+    Plaud is inconsistent about field naming across endpoints:
+    ``/file/simple/web`` returns ``file_id``/``file_name`` while
+    ``/file/confirm_upload`` returns ``id``/``filename``. We accept either
+    via :class:`pydantic.AliasChoices` so the same model parses both.
+    """
+
+    file_id: str = Field(validation_alias=AliasChoices("file_id", "id"))
+    filename: str = Field(
+        default="",
+        validation_alias=AliasChoices("file_name", "filename"),
+    )
     duration: float = 0.0  # seconds
     start_time: int = 0  # unix epoch ms
     is_trash: bool = False
@@ -81,21 +90,43 @@ class ContentListItem(_Lenient):
 class AnalysisStatus(_Lenient):
     """Polling response from ``/ai/transsumm/{file_id}``.
 
-    Plaud doesn't expose a clean "complete" boolean; we infer it from the
-    presence of usable result blocks. The raw payload is preserved on
-    :attr:`raw` so callers can dig if needed.
+    Plaud doesn't expose a clean "complete" boolean. The signals we have
+    actually observed in production:
+
+    - Top-level ``status`` is ``1`` for any successful response (does NOT
+      mean transcription has completed — just that the poll RPC succeeded).
+    - When transcription is done, ``data_result`` is a non-empty array of
+      verbatim segments (with ``content`` / ``start_time`` / ``end_time`` /
+      ``speaker`` fields). Until then it's empty / missing.
+    - When the AI summary is done, ``data_result_summ`` is non-empty.
+
+    We treat "transcription ready" as the completion bar — the AI summary
+    arrives slightly later but the verbatim transcript is the user's main
+    deliverable. Callers needing the summary can poll a bit longer
+    or simply call ``get_summary`` and tolerate a NotFoundError.
     """
 
-    state: int = 0
     raw: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def complete(self) -> bool:
-        # Plaud signals readiness via state==10 and / or non-empty ai_content.
-        if self.state == 10:
-            return True
-        return bool(self.raw.get("ai_content"))
+        result = self.raw.get("data_result")
+        return isinstance(result, list) and len(result) > 0
+
+    @property
+    def summary_ready(self) -> bool:
+        summ = self.raw.get("data_result_summ")
+        return isinstance(summ, list) and len(summ) > 0 or bool(summ)
+
+    @property
+    def state(self) -> int:
+        """Plaud's ``status`` field — kept for backward compat; rarely useful.
+
+        Will be ``1`` on every healthy response, regardless of whether
+        transcription has finished. Use :attr:`complete` to gate work.
+        """
+        return int(self.raw.get("status", 0) or 0)
 
     @classmethod
     def from_response(cls, data: dict[str, Any]) -> "AnalysisStatus":
-        return cls(state=int(data.get("state", 0) or 0), raw=data)
+        return cls(raw=data)

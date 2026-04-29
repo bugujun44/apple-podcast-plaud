@@ -154,19 +154,76 @@ class TranscriptionsAPI:
         except json.JSONDecodeError as e:
             raise APIError(f"Plaud returned non-JSON for {data_type}: {body[:200]!r}") from e
 
-    def get_segments(self, file_id: str) -> list[TranscriptionSegment]:
-        """Verbatim transcript as a list of timed segments. The JSON stored on
-        S3 is a flat array; we just validate it through Pydantic.
+    def get_segments(
+        self,
+        file_id: str,
+        *,
+        language: str = "en",
+    ) -> list[TranscriptionSegment]:
+        """Verbatim transcript as a list of timed segments.
+
+        Plaud delivers segments via one of two paths depending on the
+        recording's age and category:
+
+        - **Inline** in the ``/ai/transsumm/{id}`` poll response under
+          ``data_result``. Used by newer recordings (observed on APAC).
+        - **S3-linked** via ``content_list[data_type='transaction']`` →
+          gzipped JSON blob on S3. Used by older recordings.
+
+        We try inline first (one round-trip, always present when the
+        recording is "complete" by our definition) and fall back to S3.
         """
-        payload = self._fetch_data_link(file_id, DT_TRANSCRIPT)
+        # Path 1: inline
+        status = self.get_status(file_id, language=language)
+        inline = status.raw.get("data_result")
+        if isinstance(inline, list) and inline:
+            return [TranscriptionSegment.model_validate(s) for s in inline]
+
+        # Path 2: S3 link
+        try:
+            payload = self._fetch_data_link(file_id, DT_TRANSCRIPT)
+        except NotFoundError as e:
+            raise NotFoundError(
+                f"No transcript found for {file_id} via either inline "
+                f"data_result or content_list[transaction]. "
+                f"(Last error: {e})"
+            ) from None
         if not isinstance(payload, list):
             raise APIError(
                 f"Expected a JSON array for transaction data; got {type(payload).__name__}"
             )
         return [TranscriptionSegment.model_validate(seg) for seg in payload]
 
-    def get_summary(self, file_id: str) -> Summary:
-        """AI-generated meeting/lecture summary in markdown."""
+    def get_summary(
+        self,
+        file_id: str,
+        *,
+        language: str = "en",
+    ) -> Summary:
+        """AI-generated summary (markdown). Inline first, then S3 fallback.
+
+        The inline shape is ``data_result_summ`` — a list of ``{summary_id,
+        summ_data}`` rows where ``summ_data`` itself is a JSON string of
+        the same shape :class:`Summary` understands. If neither inline
+        nor S3 has anything, raises :class:`NotFoundError`.
+        """
+        import json as _json
+
+        # Path 1: inline
+        status = self.get_status(file_id, language=language)
+        inline = status.raw.get("data_result_summ")
+        if isinstance(inline, list) and inline:
+            first = inline[0]
+            blob = first.get("summ_data") if isinstance(first, dict) else None
+            if isinstance(blob, str):
+                try:
+                    return Summary.from_payload(_json.loads(blob))
+                except _json.JSONDecodeError:
+                    pass  # fall through to S3
+            elif isinstance(blob, dict):
+                return Summary.from_payload(blob)
+
+        # Path 2: S3 link
         payload = self._fetch_data_link(file_id, DT_SUMMARY)
         if not isinstance(payload, dict):
             raise APIError(
