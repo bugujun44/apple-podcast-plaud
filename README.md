@@ -171,11 +171,6 @@ For local development, use:
 }
 ```
 
-### 4. As a Claude Code skill (legacy)
-
-Drop the `claude-skill/` folder into `~/.claude/skills/apple-podcast-plaud/`,
-or symlink it. See [claude-skill/SKILL.md](claude-skill/SKILL.md).
-
 ## JSON envelope (output schema)
 
 ```json

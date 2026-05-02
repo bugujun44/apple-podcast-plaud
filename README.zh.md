@@ -115,11 +115,6 @@ claude mcp add --scope user --transport stdio podcast-transcribe -- uvx apple-po
 | `auth_status` | 检查 Plaud 认证状态 |
 | `auth_login` | 用邮箱密码登录 Plaud |
 
-### 4. Claude Code Skill（旧方式）
-
-将 `claude-skill/` 文件夹放到 `~/.claude/skills/apple-podcast-plaud/` 下，
-或创建 symlink。详见 [claude-skill/SKILL.md](claude-skill/SKILL.md)。
-
 ## 输出格式（JSON 信封）
 
 ```json
