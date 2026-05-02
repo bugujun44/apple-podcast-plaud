@@ -131,7 +131,45 @@ apb transcribe "逆商" --out-dir ~/Desktop/podcast-transcripts
 apb transcribe "逆商" --json-out -
 ```
 
-### 3. As a Claude Code skill
+### 3. As an MCP server (recommended for Claude Code)
+
+Add this to your Claude Code `settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "podcast-transcribe": {
+      "command": "uvx",
+      "args": ["apple-podcast-plaud", "mcp"]
+    }
+  }
+}
+```
+
+Then just talk to Claude naturally: "帮我转写最新一期播客" or "list my downloaded
+podcasts". The MCP server exposes 4 tools:
+
+| Tool | Description |
+|------|-------------|
+| `list_podcasts` | Query downloaded episodes by keyword |
+| `transcribe` | Upload + transcribe an episode via Plaud (2-5 min) |
+| `auth_status` | Check if Plaud credentials are configured |
+| `auth_login` | Log in with email + password |
+
+For local development, use:
+
+```json
+{
+  "mcpServers": {
+    "podcast-transcribe": {
+      "command": "/path/to/apple-podcast-plaud/.venv/bin/python",
+      "args": ["-m", "apple_podcast_plaud.mcp"]
+    }
+  }
+}
+```
+
+### 4. As a Claude Code skill (legacy)
 
 Drop the `claude-skill/` folder into `~/.claude/skills/apple-podcast-plaud/`,
 or symlink it. See [claude-skill/SKILL.md](claude-skill/SKILL.md).
@@ -168,9 +206,11 @@ src/apple_podcast_plaud/
 ├── plaud/      # Reusable Plaud API client (us/eu/apac region routing,
 │               # auth, recordings, transcriptions). Could spin out as
 │               # a separate package in the future.
-└── bridge/     # Apple-Podcasts ↔ Plaud orchestration: SQLite querying,
-                # language detection, language-routed tracks (Plaud / Apple
-                # TTML), output writers, CLI.
+├── bridge/     # Apple-Podcasts ↔ Plaud orchestration: SQLite querying,
+│               # language detection, language-routed tracks (Plaud / Apple
+│               # TTML), output writers, CLI.
+└── mcp/        # MCP server for Claude Code integration — thin wrapper
+                # over plaud/ and bridge/ modules.
 ```
 
 ## Acknowledgements

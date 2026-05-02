@@ -414,5 +414,13 @@ def transcribe(
         progress(f"→ Wrote JSON envelope: {json_out}")
 
 
+@main.command("mcp")
+def mcp_server() -> None:
+    """Start the MCP server (stdio transport) for Claude Code integration."""
+    from apple_podcast_plaud.mcp.server import mcp
+
+    mcp.run()
+
+
 if __name__ == "__main__":  # pragma: no cover
     main()

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- **MCP server** (`apple_podcast_plaud.mcp`): Claude Code integration via
+  stdio transport. 4 tools: `list_podcasts`, `transcribe`, `auth_status`,
+  `auth_login`. Run with `apb mcp` or `python -m apple_podcast_plaud.mcp`.
+  Configure in Claude Code settings.json with `uvx apple-podcast-plaud mcp`.
+- New dependency: `mcp>=1.0,<2.0` (Anthropic's official MCP SDK).
 - Initial project skeleton: package layout, license, README, pyproject.
 - `apple_podcast_plaud.plaud` subpackage:
   - Region-aware base URL routing (`us` / `eu` / `apac`) keyed on the JWT
