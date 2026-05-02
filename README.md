@@ -5,6 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-orange)](#)
+[![PyPI](https://img.shields.io/pypi/v/apple-podcast-plaud)](https://pypi.org/project/apple-podcast-plaud/)
+
+**English** | [中文](README.zh.md)
 
 ## What it does
 
