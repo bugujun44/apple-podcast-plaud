@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jumpin-dev/apple-podcast-plaud"
-Repository = "https://github.com/jumpin-dev/apple-podcast-plaud"
-Issues = "https://github.com/jumpin-dev/apple-podcast-plaud/issues"
+Homepage = "https://github.com/bugujun44/apple-podcast-plaud"
+Repository = "https://github.com/bugujun44/apple-podcast-plaud"
+Issues = "https://github.com/bugujun44/apple-podcast-plaud/issues"
 
 [project.scripts]
 apb = "apple_podcast_plaud.bridge.cli:main"
