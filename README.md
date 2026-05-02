@@ -40,12 +40,12 @@ package can skip Plaud entirely and use the free Apple TTML cache instead
 
 ## Status
 
-**Alpha.** APIs may change. PyPI release pending. See [CHANGELOG.md](CHANGELOG.md).
+**Alpha.** APIs may change. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Install
 
 ```bash
-pip install apple-podcast-plaud  # once published
+pip install apple-podcast-plaud
 ```
 
 For local dev (recommended — works around a Python 3.14 ``.pth`` bug we hit
