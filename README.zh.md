@@ -87,9 +87,7 @@ Token 有效期约 10 个月，过期后用同样方式重新获取。
 
 ### 2. 使用（通过 MCP Server，用自然语言操作）
 
-> **什么是 MCP？** MCP（Model Context Protocol）让 AI 助手能调用外部工具。配置好后，你不需要记任何命令，直接用自然语言对话就能完成播客转写。
-
-在 Claude Code 终端中运行一次：
+下面这行命令的作用是把本工具注册为 Claude Code 的插件，注册后 Claude 就知道怎么帮你转写播客了。只需要运行一次：
 
 ```bash
 claude mcp add --scope user --transport stdio podcast-transcribe -- uvx apple-podcast-plaud mcp
