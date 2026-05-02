@@ -22,9 +22,9 @@ transcribe it. The skill / CLI:
 5. Prints a JSON envelope to stdout — your agent picks it up and decides what
    to do next (write an article, ingest into a knowledge base, search, …)
 
-For **English** podcasts that have a native Apple-generated transcript, the
-package can skip Plaud entirely and use the free Apple TTML cache instead
-(no quota burn, instant). See [docs/language-routing.md](docs/language-routing.md).
+**Planned:** For English podcasts with a native Apple-generated transcript,
+a future version will skip Plaud and use the free Apple TTML cache instead
+(no quota burn, instant).
 
 ## Why
 
@@ -52,7 +52,7 @@ For local dev (recommended — works around a Python 3.14 ``.pth`` bug we hit
 in setuptools' editable install on some Macs):
 
 ```bash
-git clone https://github.com/jumpin-dev/apple-podcast-plaud
+git clone https://github.com/bugujun44/apple-podcast-plaud
 cd apple-podcast-plaud
 ./scripts/dev-install.sh
 source .venv/bin/activate
@@ -115,7 +115,6 @@ apb auth status
 ```
 
 Tokens last ~10 months; rotate via the same flow when expired.
-Detail: [docs/token-extraction.md](docs/token-extraction.md).
 
 ### 2. Run
 
@@ -196,8 +195,6 @@ or symlink it. See [claude-skill/SKILL.md](claude-skill/SKILL.md).
   "elapsed_sec": 187
 }
 ```
-
-Full schema: [docs/output-format.md](docs/output-format.md).
 
 ## Architecture
 
