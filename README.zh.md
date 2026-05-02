@@ -85,35 +85,23 @@ apb auth status
 
 Token 有效期约 10 个月，过期后用同样方式重新获取。
 
-### 2. 命令行使用
+### 2. 使用（通过 MCP Server，用自然语言操作）
 
-```bash
-# 转写一期已下载的播客，按关键词匹配：
-apb transcribe "逆商"
+> **什么是 MCP？** MCP（Model Context Protocol）让 AI 助手能调用外部工具。配置好后，你不需要记任何命令，直接用自然语言对话就能完成播客转写。
 
-# 自定义输出目录：
-apb transcribe "逆商" --out-dir ~/Desktop/podcast-transcripts
-
-# JSON 输出到 stdout（供 AI 助手读取）：
-apb transcribe "逆商" --json-out -
-```
-
-### 3. MCP Server（推荐，Claude Code 用户）
-
-在 Claude Code 中运行：
+在 Claude Code 终端中运行一次：
 
 ```bash
 claude mcp add --scope user --transport stdio podcast-transcribe -- uvx apple-podcast-plaud mcp
 ```
 
-然后直接对 Claude 说"帮我转写最新一期播客"。MCP Server 提供 4 个工具：
+重启 Claude Code 后，直接对话即可：
 
-| 工具 | 说明 |
-|------|------|
-| `list_podcasts` | 按关键词查询已下载的播客剧集 |
-| `transcribe` | 上传并转写一期播客（约 2-5 分钟） |
-| `auth_status` | 检查 Plaud 认证状态 |
-| `auth_login` | 用邮箱密码登录 Plaud |
+- "列出我最近下载的播客"
+- "帮我转写那期关于逆商的播客"
+- "查看我的 Plaud 登录状态"
+
+首次使用如果还没登录，Claude 会引导你在对话中完成认证，不需要离开对话窗口。
 
 ## 输出格式（JSON 信封）
 
